@@ -1,4 +1,6 @@
 """."""
+from .forms import GetPMIDsForm
+
 import urllib.request as urllib
 #import requests #substitute of urllib requires installation.
 from xml.etree import ElementTree
@@ -67,6 +69,15 @@ def get_all_data(article):
     article_data["Owner"] = get_data("OWN", article)
     return article_data
 
+def get_initialize_form(pmid, news=False):
+    initial = ""
+    replace = pmid.replace(" ", "").replace(",", "\r\n")
+    if news:
+        replace = pmid.replace("/", "").replace(" ", "")
+    if len(pmid) >=1:
+        initial = {"pmids": replace}
+    return GetPMIDsForm(initial=initial)
+    
 def get_data(element, source):
     """."""
     value = source.get(element, "")

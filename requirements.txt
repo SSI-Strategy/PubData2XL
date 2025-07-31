@@ -1,0 +1,29 @@
+# Required
+pip
+gunicorn
+Django
+python-decouple
+#python-dotenv
+#whitenoise
+#django-compressor
+nodeenv
+#django_extensions
+#notebook
+
+
+# For PostgreSQL db
+psycopg2-binary
+
+# For remote debugging server in VS Code.
+eventlet
+gevent
+
+# Other Dependencies to be installed as needed.
+lxml
+pandas
+numpy
+openpyxl
+sqlalchemy
+XlsxWriter
+# pyarrow
+# Jinja2

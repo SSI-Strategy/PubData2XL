@@ -1,0 +1,6 @@
+@import "tailwindcss" source("../src");
+@plugin "daisyui";
+@plugin "@iconify/tailwind4" {
+    prefix: "icon";
+    scale: 1.2;
+}

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}Download PubMed data into an XML file{% endblock %}
-{% block styles %}<link href="{% static 'pubdata2xl/css/style.css' %}" rel="stylesheet" crossorigin="anonymous">{% endblock %}
+<!-- {% block styles %}<link href="{% static 'pubdata2xl/css/style.css' %}" rel="stylesheet" crossorigin="anonymous">{% endblock %} -->
 {% block lead %}Web application to download PubMed data into an XML file{% endblock %}
 {% block description%}Export thousands of PubMed citations to an XML file. Free, no ads, secure, encrypted, privacy, untraceable and simple to use.{% endblock %}
 {% block logo_link_url %}{% url 'pubdata2xl:download_excel' %}{% endblock %}

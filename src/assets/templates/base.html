@@ -71,46 +71,41 @@
     <title>&#10004;&#65039; PubData2XL | {% block title %}{% endblock %}</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet" crossorigin="anonymous">
-    {% block styles %}{% endblock %}
+    <link href="{% static 'css/style.min.css' %}" rel="stylesheet" crossorigin="anonymous">
+    <!-- {% block styles %}{% endblock %} -->
   </head>
-  <body class="bg-dark">
-    <div class="container">
-      <header class="pt-3">
-        <div class="row flex-nowrap justify-content-between align-items-center">
-	        <div class="col-3 d-flex">
-            <a class="btn btn-sm btn-outline-light" id="left_link_url" href="{% block left_link_url %}{% endblock %}">{% block left_link_text %}{% endblock %}</a>
-          </div>
-          <div class="col-6 text-center">
-            <a href="{% block logo_link_url %}{% endblock %}" id="logo_link_url" >
-              <img class="d-block mx-auto mb-1" width="80px" height="80px" src="/static/img/logo.svg" alt="PubData2XL Logo">
-            </a>
-          </div>
-          <div class="col-3 d-flex justify-content-end align-items-center">
-            <a class="btn btn-sm btn-outline-light" id="right_link_url" href="{% block right_link_url %}{% endblock %}">{% block right_link_text %}{% endblock %}</a>
-          </div>
-        </div>
-      </header>
-      <div class="text-center">
-        <h1 class="text-light">{{ page_h1_title }}</h1>
-        <p  class="lead text-light">{% block lead %}{% endblock %}</p>
+  <body class="antialiased min-h-screen bg-cover bg-no-repeat bg-gradient-to-b from-neutral-900 from-65% to-green-700 to-100% text-white">
+    <div class="grid grid-cols-12 gap-x-8 gap-y-4">
+      <div class="col-span-2 col-start-2 row-start-1 pt-4 mt-4">
+        <a class="btn btn-outline hover:bg-white hover:text-black btn-sm sm:btn-sm md:btn-md lg:btn-lg" 
+          id="left_link_url" href="{% block left_link_url %}{% endblock %}">{% block left_link_text %}{% endblock %}</a>
       </div>
-      <div class="row">
-        <div class="col">
-          {% block content %}{% endblock %}
-        </div>
+      <div class="col-span-2 col-start-6 row-start-1 mt-4">
+        <a href="{% block logo_link_url %}{% endblock %}" id="logo_link_url" >
+          <img class="h-25 w-25 object-contain mx-auto" src="/static/img/logo.svg" alt="PubData2XL Logo">
+        </a>   
       </div>
-      <footer class="my-4 pt-5 text-light text-center text-small">
-        <p class="mb-1">Created with love by Iván Rivera Caraballo</p>
-        <p class="mb-1">This is free and unencumbered software released into the <a class="text-success" href="https://github.com/PubData2XL/PubData2XL/blob/main/LICENSE" target="_blank">public domain</a>.</p>
-        <p class="mb-1">Source files are available on <a class="text-success" href="https://github.com/PubData2XL/PubData2XL" target="_blank">GitHub</a></p>
-        <p class="mb-1">Data is courtesy of the National Library of Medicine (NLM).</p>
-        <p class="mb-1"><a class="text-success" href="https://pubdata2xl.com" target="_blank">PubData2XL</a> is not a product or service of NLM and it is neither affiliated with nor endorsed by NLM.</p>
-      </footer>
+      <div class="col-span-2 col-start-10 row-start-1 pt-4 mt-4 text-right">
+        <a class="btn btn-outline hover:bg-white hover:text-black btn-sm sm:btn-md md:btn-lg lg:btn-xl" id="right_link_url" href="{% block right_link_url %}{% endblock %}">{% block right_link_text %}{% endblock %}</a>
+      </div>
+      <div class="col-span-8 col-start-3 row-start-2 text-center">
+        <h1 class="text-5xl text-center">{{ page_h1_title }}</h1>
+        <p  class="text-xl text-center">{% block lead %}{% endblock %}</p>
+      </div>
+      <div class="col-span-10 col-start-2 row-start-3 py-4">
+        {% block content %}{% endblock %}
+      </div>
+      <div class="col-span-8 col-start-3 row-start-6">
+        <footer class="text-center text-small">
+          <p class="mb-1">Created with love by Iván Rivera Caraballo</p>
+          <p class="mb-1">This is free and unencumbered software released into the <a class="hover:underline hover:decoration-white" href="https://github.com/PubData2XL/PubData2XL/blob/main/LICENSE" target="_blank">public domain</a>.</p>
+          <p class="mb-1">Source files are available on <a class="hover:underline hover:decoration-white" href="https://github.com/PubData2XL/PubData2XL" target="_blank">GitHub</a></p>
+          <p class="mb-1">Data is courtesy of the National Library of Medicine (NLM).</p>
+          <p class="mb-1"><a class="hover:underline hover:decoration-white"  href="https://pubdata2xl.com" target="_blank">PubData2XL</a> is not a product or service of NLM and it is neither affiliated with nor endorsed by NLM.</p>
+        </footer>
+      </div>
     </div>
     <script src="{% static 'pwa/register_serviceworker.js' %}" crossorigin="anonymous"></script>
-    <script src="{% static 'js/popper.min.js' %}" crossorigin="anonymous"></script>
-    <script src="{% static 'js/bootstrap.min.js' %}" crossorigin="anonymous"></script>
     {% block jscript %}{% endblock %}
   </body>
 </html>
