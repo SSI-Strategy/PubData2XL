@@ -166,11 +166,13 @@ server {
         location /static {
             alias /home/sammy/webapps/pubdata2xl/static;
             expires max;
+            gzip_static on;
         }
 
         location /media {
             alias /home/sammy/webapps/pubdata2xl/media;
             expires max;
+            gzip_static on;
         }
         location / {
             proxy_pass http://127.0.0.1:8080/; #Important: This ip:port must match Gunicorn port.
@@ -185,7 +187,34 @@ server {
             proxy_send_timeout 1800;
             proxy_read_timeout 1800;
             send_timeout 1800;
+            gzip_static on;
         }
+        # Enable Gzip
+        gzip  on;
+        gzip_http_version 1.0;
+        gzip_comp_level 2;
+        gzip_min_length 1100;
+        gzip_buffers     4 8k;
+        gzip_proxied any;
+        gzip_types
+            text/css
+            text/javascript
+            text/xml
+            text/plain
+            text/x-component
+            application/javascript
+            application/json
+            application/xml
+            application/rss+xml
+            font/truetype
+            font/opentype
+            application/vnd.ms-fontobject
+            image/svg+xml;
+        gzip_static on;
+        gzip_proxied        expired no-cache no-store private auth;
+        gzip_disable        "msie6";
+        gzip_vary           on;
+
         server_tokens off;
         add_header Strict-Transport-Security "max-age=63072000; includeSubdomains; preload";
         add_header Access-Control-Allow-Origin https://$host;
@@ -247,12 +276,16 @@ pip install -r src/requirements.txt
 sudo mkdir /home/sammy/webapps/pubdata2xl/src/apps/pubdata2xl/temp/
 ```
 ### Create .env file. Keep this file secure and private.
+Copy the result of the code below and paste it as the SECRET_KEY in the .env file 
+```
+python -c "import secrets; print(secrets.token_urlsafe())"
+```
 ```
 cd /home/sammy/webapps/pubdata2xl/src
 sudo nano .env
 ```
 ```
-SECRET_KEY = "JUST_TYPE_A_LONG_RANDOM_LINE_OF_CHARACTERS_THIS_IS_A_SECURITY_FEATURE_DO_NOT_SHARE_THIS_WITH_ANYONE_ALL_THIS_CAN_BE_USED_azAZ123456789@#$%^&*()?><~"
+SECRET_KEY = "Paste here the result of python -c 'import secrets; print(secrets.token_urlsafe())'"
 NCBI_API_KEY = "YOUR_OWN_NCBIAPI_KEY"
 ```
 ### Create a Systemd file to manage Gunicorn.

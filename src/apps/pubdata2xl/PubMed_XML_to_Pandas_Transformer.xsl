@@ -1,6 +1,16 @@
 <?xml version="1.0"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="xml" encoding="utf-8" indent="yes"/>
+
+  <xsl:template match="b|i|sup|sub|u|DispFormula|*[starts-with(name(), 'mml')]">
+    <xsl:text>{--</xsl:text>
+    <xsl:value-of select="name()"/>
+    <xsl:text>--}</xsl:text>
+    <xsl:apply-templates select="node()|@*"/>
+    <xsl:text>{--/</xsl:text>
+    <xsl:value-of select="name()"/>
+    <xsl:text>--}</xsl:text>
+  </xsl:template>
   
   <xsl:template match="PubmedArticleSet">
     <xsl:apply-templates/>
@@ -17,79 +27,98 @@
       <xsl:apply-templates select="PubmedBookData"/>
     </xsl:element>
   </xsl:template>
+
+  <!-- BookDocument -->
+  <xsl:template match="BookDocument">
+    <xsl:element name="Type">PubmedBookArticle</xsl:element>
+    <xsl:copy-of select='PMID'/>
+    <xsl:apply-templates select="ArticleIdList"/>
+    <xsl:apply-templates select="Book"/>
+    <xsl:apply-templates select="Abstract"/>    
+    <xsl:apply-templates select="Sections"/>
+    <xsl:apply-templates select="VernacularTitle"/>  
+  </xsl:template>
+  <!-- End BookDocument -->
+
+  <xsl:template match="Book">
+    <xsl:copy-of select="Publisher/PublisherName"/>
+    <xsl:copy-of select="Publisher/PublisherLocation"/>
+    <xsl:apply-templates select="BookTitle"/>
+    <xsl:apply-templates select="PubDate"/>
+    <xsl:apply-templates select="AuthorList"/>
+    <xsl:apply-templates select="InvestigatorList"/>
+    <xsl:copy-of select="Volume"/>
+    <xsl:apply-templates select="VolumeTitle"/>
+    <xsl:apply-templates select="CollectionTitle"/>
+    <xsl:if test="Isbn != ''">
+      <xsl:element name="Isbn">
+        <xsl:for-each select="Isbn">
+          <xsl:if test="position() != 1">||</xsl:if>
+          <xsl:value-of select='text()'/>
+        </xsl:for-each>
+      </xsl:element>
+    </xsl:if>
+    <xsl:if test="ELocationID != ''">
+      <xsl:element name="ELocationID">
+        <xsl:for-each select="ELocationID">
+          <xsl:if test="position() != 1">||</xsl:if>
+          <xsl:value-of select='concat( @EIdType,": ", text())'/>
+        </xsl:for-each>
+      </xsl:element>
+    </xsl:if>    
+  </xsl:template>
+
   
-  <!-- All Date type fields -->
-  <xsl:template match="DateCompleted | DateRevised | PubDate | ArticleDate | PubMedPubDate">
-    <xsl:variable name="date_element"><xsl:value-of select ="name(.)"/><xsl:if test="@PubStatus != ''"><xsl:value-of select ="concat('_', @PubStatus)"/></xsl:if></xsl:variable>
-    <xsl:variable name="date_type"><xsl:if test="@DateType != ''"><xsl:value-of select ="concat('_', @DateType)"/></xsl:if></xsl:variable>
-    <xsl:variable name="Year"><xsl:if test="Year != ''"><xsl:value-of select ="Year"/></xsl:if></xsl:variable>
-    <xsl:variable name="Month">
-      <xsl:if test="Month != ''">
-        <xsl:choose>
-          <xsl:when test="string-length(Month) = 1 and number(Month) >= 1 and number(Month) &lt;= 9">
-            <xsl:value-of select ="concat('-0', Month)"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:value-of select ="concat('-', Month)"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:if>
-    </xsl:variable>
-    <xsl:variable name="Day">
-      <xsl:if test="Day != ''">
-        <xsl:choose>
-          <xsl:when test="string-length(Day) = 1 and number(Day) >= 1 and number(Day) &lt;= 9">
-            <xsl:value-of select ="concat('-0', Day)"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:value-of select ="concat('-', Day)"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:if>
-    </xsl:variable>
-    <xsl:variable name="Hour">
-      <xsl:if test="Hour != ''">
-        <xsl:choose>
-          <xsl:when test="string-length(Hour) = 1 and number(Hour) >= 0 and number(Hour) &lt;= 9">
-            <xsl:value-of select ="concat(' 0', Hour)"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:value-of select ="concat(' ', Hour)"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:if>
-    </xsl:variable>
-    <xsl:variable name="Minute">
-      <xsl:if test="Minute != ''">
-        <xsl:choose>
-          <xsl:when test="string-length(Minute) = 1 and number(Minute) >= 0 and number(Minute) &lt;= 9">
-            <xsl:value-of select ="concat(':0', Minute)"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:value-of select ="concat(':', Minute)"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:if>
-    </xsl:variable>
-    <xsl:variable name="Second">
-      <xsl:if test="Second != ''">
-        <xsl:choose>
-          <xsl:when test="string-length(Second) = 1 and number(Second) >= 0 and number(Second) &lt;= 9">
-            <xsl:value-of select ="concat(':0', Second)"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:value-of select ="concat(':', Second)"/>
-          </xsl:otherwise>
-        </xsl:choose>
-        <xsl:value-of select ="concat(':', Second)"/>
-      </xsl:if>
-    </xsl:variable>
-    <xsl:variable name="Season"><xsl:if test="Season != ''"><xsl:value-of select ="concat('-', Season)"/></xsl:if></xsl:variable>
-    
-    <xsl:element name="{concat($date_element, $date_type)}">
-      <xsl:value-of select ="concat($Year, $Month, $Day, $Season, $Hour, $Minute, $Second)"/>
+  <xsl:template match="Sections">
+    <xsl:element name="Sections">
+        <xsl:for-each select="Section">
+          <xsl:if test="position() != 1">||</xsl:if>
+          <xsl:variable name="SectionTitle"><xsl:apply-templates select="SectionTitle" /></xsl:variable>
+          <xsl:value-of select='concat("Section: ", $SectionTitle)'/>
+        </xsl:for-each>
+      </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="SectionTitle">
+    <xsl:apply-templates select="node()" />
+    <xsl:if test="@book != ''">
+      <xsl:value-of select='concat(", BookID: ", @book)'/>
+    </xsl:if>
+    <xsl:if test="@sec != ''">
+      <xsl:value-of select='concat(", BookSectionID: ", @sec)'/>
+    </xsl:if>    
+    <xsl:if test="@part != ''">
+      <xsl:value-of select='concat(", BookPartID: ", @part)'/>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="BookTitle|CollectionTitle">
+    <xsl:element name="{name()}">
+      <xsl:apply-templates select="node()" />
+    </xsl:element>
+    <xsl:if test="@book != ''">
+      <xsl:element name="BookID">
+        <xsl:value-of select='@book'/>
+      </xsl:element>
+    </xsl:if>
+    <xsl:if test="@sec != ''">
+      <xsl:element name="BookSectionID">
+        <xsl:value-of select='@sec'/>
+      </xsl:element>
+    </xsl:if>    
+    <xsl:if test="@part != ''">
+      <xsl:element name="BookPartID">
+        <xsl:value-of select='@part'/>
+      </xsl:element>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="VolumeTitle|ArticleTitle|VernacularTitle|CoiStatement">
+    <xsl:element name="{name()}">
+      <xsl:apply-templates select="node()" />
     </xsl:element>
   </xsl:template>
+  <!-- End Book -->
 
   <!-- MedlineCitation -->
   <xsl:template match="MedlineCitation">
@@ -119,11 +148,7 @@
     <xsl:apply-templates select="OtherID"/>
     <xsl:apply-templates select="OtherAbstract"/>
     <xsl:apply-templates select="KeywordList"/>
-    <xsl:if test="CoiStatement != ''">
-      <xsl:element name="CoiStatement">
-        <xsl:value-of select="CoiStatement"/>
-      </xsl:element>
-    </xsl:if>
+    <xsl:apply-templates select="CoiStatement"/>
     <xsl:if test="SpaceFlightMission != ''">
       <xsl:element name="SpaceFlightMission">
         <xsl:for-each select="SpaceFlightMission">
@@ -141,8 +166,8 @@
       <xsl:value-of select="@PubModel"/>
     </xsl:element>
     <xsl:apply-templates select="Journal"/>
-    <xsl:copy-of select='ArticleTitle'/>
-    <xsl:copy-of select='VernacularTitle'/>
+    <xsl:apply-templates select="ArticleTitle"/>
+    <xsl:apply-templates select="VernacularTitle"/>
     <xsl:apply-templates select="Pagination"/>
     <xsl:if test="ELocationID != ''">
       <xsl:element name="ELocationID">
@@ -219,10 +244,84 @@
             </xsl:otherwise>
           </xsl:choose>
         </xsl:if>
-        <xsl:value-of select='text()'/>
+        <!-- <xsl:value-of select='text()'/>         -->
+        <xsl:apply-templates select="node()" />
       </xsl:for-each>
     </xsl:element>
     <xsl:copy-of select='CopyrightInformation'/>
+  </xsl:template>
+
+  <!-- All Date type fields -->
+  <xsl:template match="DateCompleted | DateRevised | PubDate | ArticleDate | PubMedPubDate">
+    <xsl:variable name="date_element"><xsl:value-of select ="name(.)"/><xsl:if test="@PubStatus != ''"><xsl:value-of select ="concat('_', @PubStatus)"/></xsl:if></xsl:variable>
+    <xsl:variable name="date_type"><xsl:if test="@DateType != ''"><xsl:value-of select ="concat('_', @DateType)"/></xsl:if></xsl:variable>
+    <xsl:variable name="Year"><xsl:if test="Year != ''"><xsl:value-of select ="Year"/></xsl:if></xsl:variable>
+    <xsl:variable name="Month">
+      <xsl:if test="Month != ''">
+        <xsl:choose>
+          <xsl:when test="string-length(Month) = 1 and number(Month) >= 1 and number(Month) &lt;= 9">
+            <xsl:value-of select ="concat('-0', Month)"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select ="concat('-', Month)"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:if>
+    </xsl:variable>
+    <xsl:variable name="Day">
+      <xsl:if test="Day != ''">
+        <xsl:choose>
+          <xsl:when test="string-length(Day) = 1 and number(Day) >= 1 and number(Day) &lt;= 9">
+            <xsl:value-of select ="concat('-0', Day)"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select ="concat('-', Day)"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:if>
+    </xsl:variable>
+    <xsl:variable name="Hour">
+      <xsl:if test="Hour != ''">
+        <xsl:choose>
+          <xsl:when test="string-length(Hour) = 1 and number(Hour) >= 0 and number(Hour) &lt;= 9">
+            <xsl:value-of select ="concat(' 0', Hour)"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select ="concat(' ', Hour)"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:if>
+    </xsl:variable>
+    <xsl:variable name="Minute">
+      <xsl:if test="Minute != ''">
+        <xsl:choose>
+          <xsl:when test="string-length(Minute) = 1 and number(Minute) >= 0 and number(Minute) &lt;= 9">
+            <xsl:value-of select ="concat(':0', Minute)"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select ="concat(':', Minute)"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:if>
+    </xsl:variable>
+    <xsl:variable name="Second">
+      <xsl:if test="Second != ''">
+        <xsl:choose>
+          <xsl:when test="string-length(Second) = 1 and number(Second) >= 0 and number(Second) &lt;= 9">
+            <xsl:value-of select ="concat(':0', Second)"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select ="concat(':', Second)"/>
+          </xsl:otherwise>
+        </xsl:choose>
+        <xsl:value-of select ="concat(':', Second)"/>
+      </xsl:if>
+    </xsl:variable>
+    <xsl:variable name="Season"><xsl:if test="Season != ''"><xsl:value-of select ="concat('-', Season)"/></xsl:if></xsl:variable>
+    
+    <xsl:element name="{concat($date_element, $date_type)}">
+      <xsl:value-of select ="concat($Year, $Month, $Day, $Season, $Hour, $Minute, $Second)"/>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="Author | Investigator | PersonalNameSubject" mode="all_data">
@@ -230,13 +329,16 @@
     <xsl:variable name="LastName"><xsl:if test="LastName != ''"><xsl:value-of select ='concat(", LastName: ", LastName)'/></xsl:if></xsl:variable>
     <xsl:variable name="ForeName"><xsl:if test="ForeName != ''"><xsl:value-of select ='concat(", ForeName: ", ForeName)'/></xsl:if></xsl:variable>
     <xsl:variable name="Initials"><xsl:if test="Initials != ''"><xsl:value-of select ='concat(", Initials: ", Initials)'/></xsl:if></xsl:variable>
-    <xsl:variable name="Suffix"><xsl:if test="Suffix != ''"><xsl:value-of select ='concat(", Suffix: ", Suffix)'/></xsl:if></xsl:variable>
+    <xsl:variable name="Suffix"><xsl:if test="Suffix != ''"><xsl:text>, Suffix: </xsl:text><xsl:apply-templates select="Suffix" /></xsl:if></xsl:variable>
     <xsl:variable name="Identifier"><xsl:if test="Identifier != ''"><xsl:value-of select ='concat(", ", Identifier/@Source, ": ", Identifier, " ")'/></xsl:if></xsl:variable>
     <xsl:variable name="AffiliationInfo">
-      <xsl:if test="not(AffiliationInfo)">, Affiliation: Not Available</xsl:if>
-      <xsl:for-each select="AffiliationInfo">
-        <xsl:value-of select ='concat(", Affiliation ", position(), ": ", Affiliation)'/>
-      </xsl:for-each>
+      <xsl:if test="not(CollectiveName)">
+        <xsl:if test="not(AffiliationInfo)">, Affiliation: Not Available</xsl:if>
+        <xsl:for-each select="AffiliationInfo">
+          <xsl:variable name="Affiliation"><xsl:apply-templates select="node()" /></xsl:variable>
+          <xsl:value-of select ='concat(", Affiliation ", position(), ": ", $Affiliation)'/>
+        </xsl:for-each>
+      </xsl:if>
     </xsl:variable>
     <xsl:if test="position() != 1">||</xsl:if>
     <xsl:value-of select='concat("Position: ", position(), $CollectiveName, $LastName, $ForeName, $Initials, $Suffix, $Identifier, $AffiliationInfo)'/>
@@ -246,7 +348,7 @@
     <xsl:variable name="CollectiveName" select="CollectiveName"/>
     <xsl:variable name="LastName" select ='LastName'/>
     <xsl:variable name="ForeName"><xsl:if test="ForeName != ''"><xsl:value-of select ='concat(", ", ForeName)'/></xsl:if></xsl:variable>
-    <xsl:variable name="Suffix"><xsl:if test="Suffix != ''"><xsl:value-of select ='concat(" ", Suffix)'/></xsl:if></xsl:variable>
+    <xsl:variable name="Suffix"><xsl:if test="Suffix != ''"><xsl:text> </xsl:text><xsl:apply-templates select="Suffix" /></xsl:if></xsl:variable>
     <xsl:if test="position() != 1">||</xsl:if>
     <xsl:value-of select='concat($CollectiveName, $LastName, $ForeName, $Suffix)'/>
   </xsl:template>
@@ -255,7 +357,7 @@
     <xsl:variable name="CollectiveName" select="CollectiveName"/>
     <xsl:variable name="ForeName"><xsl:if test="ForeName != ''"><xsl:value-of select ='concat(ForeName, " ")'/></xsl:if></xsl:variable>
     <xsl:variable name="LastName" select ='LastName'/>
-    <xsl:variable name="Suffix"><xsl:if test="Suffix != ''"><xsl:value-of select ='concat(" ", Suffix)'/></xsl:if></xsl:variable>
+    <xsl:variable name="Suffix"><xsl:if test="Suffix != ''"><xsl:text> </xsl:text><xsl:apply-templates select="Suffix" /></xsl:if></xsl:variable>
     <xsl:if test="position() != 1">||</xsl:if>
     <xsl:value-of select='concat($CollectiveName, $ForeName, $LastName, $Suffix)'/>
   </xsl:template>
@@ -264,17 +366,21 @@
     <xsl:variable name="CollectiveName" select="CollectiveName"/>
     <xsl:variable name="LastName" select ='LastName'/>
     <xsl:variable name="ForeName"><xsl:if test="ForeName != ''"><xsl:value-of select ='concat(", ", ForeName)'/></xsl:if></xsl:variable>
-    <xsl:variable name="Suffix"><xsl:if test="Suffix != ''"><xsl:value-of select ='concat(" ", Suffix)'/></xsl:if></xsl:variable>
+    <xsl:variable name="Suffix"><xsl:if test="Suffix != ''"><xsl:text> </xsl:text><xsl:apply-templates select="Suffix" /></xsl:if></xsl:variable>
     <xsl:variable name="AffiliationInfo">
-      <xsl:if test="not(AffiliationInfo)">Affiliation: Not Available</xsl:if>
-      <xsl:for-each select="AffiliationInfo">
-        <!-- <xsl:if test="position() = 1">(   </xsl:if> -->
-        <xsl:if test="position() != 1">, </xsl:if>
-        <xsl:value-of select ='concat("Affiliation ", position(), ": ", Affiliation)'/>
-      </xsl:for-each>
+      <xsl:if test="not(CollectiveName)">
+        <xsl:text> (</xsl:text>
+        <xsl:if test="not(AffiliationInfo)">Affiliation: Not Available</xsl:if>
+        <xsl:for-each select="AffiliationInfo">
+          <xsl:if test="position() != 1">, </xsl:if>
+          <xsl:variable name="Affiliation"><xsl:apply-templates select="node()" /></xsl:variable>
+          <xsl:value-of select ='concat("Affiliation ", position(), ": ", $Affiliation)'/>
+        </xsl:for-each>
+        <xsl:text>)</xsl:text>
+      </xsl:if>
     </xsl:variable>
     <xsl:if test="position() != 1">||</xsl:if>
-    <xsl:value-of select='concat($CollectiveName, $LastName, $ForeName, $Suffix, " (", $AffiliationInfo, ")")'/>
+    <xsl:value-of select='concat($CollectiveName, $LastName, $ForeName, $Suffix, $AffiliationInfo)'/>
   </xsl:template>
 
   <xsl:template match="Author | Investigator | PersonalNameSubject" mode="abbreviated">
@@ -286,19 +392,28 @@
   </xsl:template>
 
   <xsl:template match="AuthorList | InvestigatorList | PersonalNameSubjectList">
-    <xsl:element name="{name(.)}">
+    <xsl:variable name="listname">
+      <xsl:choose>
+        <xsl:when test="@Type = 'authors'">AuthorList</xsl:when>
+        <xsl:when test="@Type = 'editors'">EditorList</xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select ='name(.)'/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:element name="{$listname}">
       <xsl:apply-templates select="Author | Investigator | PersonalNameSubject" mode="all_data"/>
     </xsl:element>
-    <xsl:element name="{concat(name(.), '_Fullnames')}">
+    <xsl:element name="{concat($listname, '_Fullnames')}">
       <xsl:apply-templates select="Author | Investigator | PersonalNameSubject" mode="fullnames"/>
     </xsl:element>
-    <xsl:element name="{concat(name(.), '_Name_First')}">
+    <xsl:element name="{concat($listname, '_Name_First')}">
       <xsl:apply-templates select="Author | Investigator | PersonalNameSubject" mode="name_first"/>
     </xsl:element>
-    <xsl:element name="{concat(name(.), '_Fullnames_with_affiliation')}">
+    <xsl:element name="{concat($listname, '_Fullnames_with_affiliation')}">
       <xsl:apply-templates select="Author | Investigator | PersonalNameSubject" mode="fullnames_with_affiliation"/>
     </xsl:element>
-    <xsl:element name="{concat(name(.), '_Abbreviated')}">
+    <xsl:element name="{concat($listname, '_Abbreviated')}">
       <xsl:apply-templates select="Author | Investigator | PersonalNameSubject" mode="abbreviated"/>
     </xsl:element>
   </xsl:template>
@@ -464,15 +579,16 @@
       </xsl:for-each>
     </xsl:element>
   </xsl:template>
-
   <!-- End MedlineCitation -->
   
   <!-- PubmedData -->
-
-  <xsl:template match="PubmedData">
+  <xsl:template match="PubmedData|PubmedBookData">
     <xsl:apply-templates select="History/PubMedPubDate"/>
-    <xsl:copy-of select="PublicationStatus"/>    
-    <xsl:apply-templates select="ArticleIdList"/>
+    <xsl:copy-of select="PublicationStatus"/>
+    <xsl:element name='NLM_ArticleIdList'>
+      <xsl:variable name="IdList"><xsl:apply-templates select="ArticleIdList"/></xsl:variable>
+      <xsl:value-of select='$IdList'/>
+    </xsl:element>
     <xsl:apply-templates select="ObjectList"/>
     <xsl:apply-templates select="ReferenceList"/>
   </xsl:template>
@@ -506,19 +622,6 @@
       </xsl:for-each>
     </xsl:element>
   </xsl:template>
-
   <!-- End PubmedData -->
-
-  <!-- BookDocument -->
-
-  <xsl:template match="BookDocument">
-    <xsl:element name="Type">PubmedBookArticle</xsl:element>
-  </xsl:template>
-  
-  <xsl:template match="PubmedBookData">
-    <xsl:element name="History">
-        <xsl:value-of select="@val"/>
-      </xsl:element>
-  </xsl:template>
 
 </xsl:stylesheet>

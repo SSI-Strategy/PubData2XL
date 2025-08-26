@@ -6,6 +6,7 @@
         <div class="text-error"><strong>{{ error|escape }}</strong></div>
       {% endfor %}
     {% endif %}
+    <label class="sr-only" for="{{ form.pmids.id_for_label }}">Type one PMID per row to download its metadata from PubMed.</label>
     <textarea class="field-sizing-content textarea w-full min-h-40 bg-transparent border-green-700 textarea-md 
     focus-within:outline-2 focus-within:outline-white focus-within:outline-offset-0 resize-none p-2"
     name="{{ form.pmids.html_name }}" id="{{ form.pmids.id_for_label }}"
