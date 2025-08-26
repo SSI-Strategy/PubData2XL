@@ -34,6 +34,13 @@
     <xsl:copy-of select='PMID'/>
     <xsl:apply-templates select="ArticleIdList"/>
     <xsl:apply-templates select="Book"/>
+    <xsl:copy-of select="Language"/>
+    <xsl:element name="PublicationTypeList_all_data">
+      <xsl:apply-templates select="PublicationType" mode="all_data"/>
+    </xsl:element>
+    <xsl:element name="PublicationTypeList">
+      <xsl:apply-templates select="PublicationType" mode="clean"/>
+    </xsl:element>
     <xsl:apply-templates select="Abstract"/>    
     <xsl:apply-templates select="Sections"/>
     <xsl:apply-templates select="VernacularTitle"/>  
@@ -244,7 +251,6 @@
             </xsl:otherwise>
           </xsl:choose>
         </xsl:if>
-        <!-- <xsl:value-of select='text()'/>         -->
         <xsl:apply-templates select="node()" />
       </xsl:for-each>
     </xsl:element>
