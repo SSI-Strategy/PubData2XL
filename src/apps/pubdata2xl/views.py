@@ -27,7 +27,7 @@ MEDLINE_URL = MEDLINE_URL + "&rettype=medline"
 MEDLINE_URL = MEDLINE_URL + "&retmode=xml&id="
 CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 DECLARATION_AND_DOCTYPE = '''<?xml version="1.0" ?>
-<!DOCTYPE PubmedArticleSet PUBLIC "-//NLM//DTD PubMedArticle, 1st January 2019//EN" "https://dtd.nlm.nih.gov/ncbi/pubmed/out/pubmed_190101.dtd">
+<!DOCTYPE PubmedArticleSet PUBLIC "-//NLM//DTD PubMedArticle, 1st January 2025//EN" "https://dtd.nlm.nih.gov/ncbi/pubmed/out/pubmed_250101.dtd">
 '''
 
 def redirect_view(request, pmid):
@@ -61,6 +61,7 @@ def download_excel(request, pmid):
                 pubmed_data = pd.concat([pubmed_data, temp_df], ignore_index=True)
             output = io.BytesIO()
             writer = pd.ExcelWriter(output, engine='xlsxwriter')
+            pubmed_data = pubmed_data.apply(lambda x: x.str.replace("{--","<").str.replace("--}",">"))
             pubmed_data.to_excel(writer, sheet_name='PubData2XL', index=False, header=True)
             writer.close()
             response = HttpResponse(output.getvalue(), content_type=CONTENT_TYPE)
