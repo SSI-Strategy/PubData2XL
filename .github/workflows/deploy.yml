@@ -45,9 +45,9 @@ jobs:
 
       - name: Health check
         run: |
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://pubdata2xl-ssi.azurewebsites.net/)
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -L https://pubdata2xl-ssi.azurewebsites.net/)
           echo "Health check returned: $HTTP_STATUS"
-          if [ "$HTTP_STATUS" -lt 500 ] || [ "$HTTP_STATUS" -ge 502 ] || [ "$HTTP_STATUS" -ge 503 ]; then
+          if [ "$HTTP_STATUS" -eq 500 ] || [ "$HTTP_STATUS" -eq 502 ] || [ "$HTTP_STATUS" -eq 503 ]; then
             echo "::error::Health check failed with status $HTTP_STATUS"
             exit 1
           fi
