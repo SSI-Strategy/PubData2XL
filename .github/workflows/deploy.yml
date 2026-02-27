@@ -31,7 +31,7 @@ jobs:
           cd src
           python manage.py collectstatic --noinput
         env:
-          SECRET_KEY: build-only-dummy-key
+          DJANGO_SECRET_KEY: build-only-dummy-key
 
       - name: Deploy to Azure
         uses: azure/webapps-deploy@v3
