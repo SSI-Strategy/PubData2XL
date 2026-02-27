@@ -35,6 +35,7 @@ ALLOWED_HOSTS = [
     "www.pubdata2xl.com",
     "pubdata.org",
     "www.pubdata.org",
+    "pubdata2xl-ssi.azurewebsites.net",
 ]
 
 # Application definition
