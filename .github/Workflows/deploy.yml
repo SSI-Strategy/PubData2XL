@@ -1,0 +1,52 @@
+name: Deploy to Azure App Service
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # Manual trigger for ad-hoc deploys
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false # Don't cancel in-flight deploys
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Collect static files
+        run: |
+          cd src
+          python manage.py collectstatic --noinput
+        env:
+          SECRET_KEY: build-only-dummy-key
+
+      - name: Deploy to Azure
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: pubdata2xl-ssi
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+
+      - name: Wait for deployment to stabilize
+        run: sleep 30
+
+      - name: Health check
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://pubdata2xl-ssi.azurewebsites.net/)
+          echo "Health check returned: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -lt 200 ] || [ "$HTTP_STATUS" -ge 400 ]; then
+            echo "::error::Health check failed with status $HTTP_STATUS"
+            exit 1
+          fi

@@ -1,0 +1,75 @@
+name: Sync upstream PubData2XL
+
+on:
+  schedule:
+    - cron: "0 7 * * 1" # Every Monday at 07:00 UTC
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Add upstream remote
+        run: git remote add upstream https://github.com/PubData2XL/PubData2XL.git || true
+
+      - name: Fetch upstream
+        run: git fetch upstream main
+
+      - name: Check for new commits
+        id: check
+        run: |
+          BEHIND=$(git rev-list --count HEAD..upstream/main)
+          echo "behind=$BEHIND" >> "$GITHUB_OUTPUT"
+          if [ "$BEHIND" -gt 0 ]; then
+            echo "Upstream has $BEHIND new commit(s)"
+            CHANGES=$(git log --oneline HEAD..upstream/main)
+            echo "changes<<EOF" >> "$GITHUB_OUTPUT"
+            echo "$CHANGES" >> "$GITHUB_OUTPUT"
+            echo "EOF" >> "$GITHUB_OUTPUT"
+          else
+            echo "Already up to date"
+          fi
+
+      - name: Create pull request for upstream changes
+        if: steps.check.outputs.behind > 0
+        run: |
+          # Create a sync branch
+          BRANCH="upstream-sync/$(date +%Y-%m-%d)"
+          git checkout -b "$BRANCH"
+          git merge upstream/main --no-edit || {
+            echo "::warning::Merge conflict detected — manual resolution needed"
+            git merge --abort
+            exit 1
+          }
+          git push origin "$BRANCH"
+
+          # Create PR (requires gh cli, available on GitHub runners)
+          gh pr create \
+            --title "⬆️ Upstream sync: PubData2XL $(date +%Y-%m-%d)" \
+            --body "$(cat <<EOF
+          Automated sync from [PubData2XL/PubData2XL](https://github.com/PubData2XL/PubData2XL).
+
+          **${{ steps.check.outputs.behind }} new commit(s):**
+
+          \`\`\`
+          ${{ steps.check.outputs.changes }}
+          \`\`\`
+
+          Merging this PR will trigger deployment to Azure.
+          EOF
+          )" \
+            --base main \
+            --head "$BRANCH"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
