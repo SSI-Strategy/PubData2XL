@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True #config('DJANGO_DEBUG', cast=bool)
+DEBUG = config('DJANGO_DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -36,6 +36,16 @@ ALLOWED_HOSTS = [
     "pubdata.org",
     "www.pubdata.org",
     "pubdata2xl-ssi.azurewebsites.net",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://pubmed2xl.com",
+    "https://www.pubmed2xl.com",
+    "https://pubdata2xl.com",
+    "https://www.pubdata2xl.com",
+    "https://pubdata.org",
+    "https://www.pubdata.org",
+    "https://pubdata2xl-ssi.azurewebsites.net",
 ]
 
 # Application definition
