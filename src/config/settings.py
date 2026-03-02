@@ -187,6 +187,24 @@ else: #in development
     import ssl
     ssl._create_default_https_context = ssl._create_unverified_context
 
+# Logging - ensure errors show in Azure App Service log stream
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
+
 # SECURITY WARNING: keep the API a secret
 NCBI_API_KEY = config('NCBI_API_KEY')
 
