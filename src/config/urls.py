@@ -18,6 +18,13 @@ Including another URLconf
 #from django.contrib import admin
 from django.urls import include, path
 from django.views.generic.base import TemplateView
+from django.http import HttpResponse
+import sys, traceback
+
+def handler500(request):
+    """Temporary handler to diagnose 500 errors."""
+    tb = ''.join(traceback.format_exception(*sys.exc_info()))
+    return HttpResponse(f"500 Error:\n{tb}", content_type='text/plain', status=500)
 
 urlpatterns = [
     #path('admin/', admin.site.urls),
