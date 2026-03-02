@@ -162,6 +162,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #https://docs.djangoproject.com/en/5.1/ref/settings
 
 if DEBUG == False: # if on production
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
