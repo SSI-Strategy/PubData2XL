@@ -41,7 +41,7 @@ jobs:
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
 
       - name: Wait for deployment to stabilize
-        run: sleep 30
+        run: sleep 60
 
       - name: Health check
         run: |
